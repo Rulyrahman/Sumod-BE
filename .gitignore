@@ -4,6 +4,10 @@
 /node_modules
 /.pnp
 .pnp.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
 
 # testing
 /coverage
@@ -17,7 +21,20 @@
 .env.development.local
 .env.test.local
 .env.production.local
+.env
 
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Logs
+logs
+*.log
+logs/**/*.log
+
+# Editor/IDE
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Prisma
+prisma/.env         
+prisma/migrations/  
+prisma/.db/
