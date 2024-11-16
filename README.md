@@ -13,10 +13,12 @@ Petunjuk ini akan membantu Anda menyiapkan dan menjalankan proyek di komputer lo
 
 ## Instalasi
 1. Clone repositori ini:
-
-   `git clone https://github.com/Rulyrahman/Sumod-BE.git`
-
-   `cd Sumod-BE`
+    ```bash
+    git clone https://github.com/Rulyrahman/Sumod-BE.git
+    ```
+    ```bash
+    cd Sumod-BE
+    ```
 
 2. Instal dependensi
     ```bash
