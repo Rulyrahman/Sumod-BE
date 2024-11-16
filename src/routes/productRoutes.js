@@ -7,7 +7,10 @@ import { upload } from '../config/uploadFileConfig.js'
 const router = Router()
 
 
-router.post( '/product', upload.single( 'picture' ), createProduct )
+router.post(
+    '/product',
+    upload.single( 'picture' ),
+    createProduct )
 router.get(
     '/product',
     // authMiddleware,
@@ -18,8 +21,13 @@ router.get(
     // authMiddleware,
     getProductById
 )
-router.put( '/product/:id', upload.single( 'picture' ), updateProduct )
-router.delete( '/product/:id', deleteProduct )
+router.put(
+    '/product/:id',
+    upload.single( 'picture' ),
+    updateProduct )
+router.delete(
+    '/product/:id',
+    deleteProduct )
 
 
 export default router
