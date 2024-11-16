@@ -27,5 +27,5 @@ app.use( '/api/auth', authRoutes )
 // Middleware multer error handler
 app.use( multerErrorHandler )
 
-// Start server
+
 app.listen( PORT, () => { console.log( `Server running on http://localhost:${PORT}` ) } )

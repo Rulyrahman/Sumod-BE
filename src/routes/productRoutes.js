@@ -1,4 +1,3 @@
-// src/routes/userRoutes.ts
 import { Router } from 'express'
 import { createProduct, getAllProducts, getProductById, updateProduct, deleteProduct } from '../controllers/productController.js'
 import { validateEmail } from '../middlewares/validationMiddleware.js'
