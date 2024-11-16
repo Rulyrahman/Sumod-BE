@@ -1,4 +1,3 @@
-// src/controllers/userController.ts
 import * as productService from '../services/productService.js'
 
 
@@ -82,7 +81,7 @@ export const deleteProduct = async ( req, res ) => {
 
   try
   {
-    await productService.deleteUser( Number( id ) ) // Ensure deleteUser accepts a number
+    await productService.deleteUser( Number( id ) )
     return res.status( 200 ).json( { message: 'Success deleted' } )
   } catch ( error )
   {

@@ -1,4 +1,3 @@
-// src/services/userService.ts
 import { PrismaClient } from '@prisma/client'
 import validator from 'validator'
 import { v2 as cloudinary } from 'cloudinary'
