@@ -61,10 +61,6 @@ export const logout = async ( req, res ) => {
             return res.status( 400 ).json( { message: 'Refresh token is required' } )
         }
 
-        await prisma.refreshToken.delete( {
-            where: { token: refreshToken },
-        } )
-
         await authService.logoutUser( refreshToken )
 
         return res.status( 200 ).json( { message: 'Logout successful' } )
