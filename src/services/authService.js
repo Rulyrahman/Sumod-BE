@@ -2,8 +2,10 @@ import bcrypt from 'bcryptjs'
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
 import { PrismaClient } from '@prisma/client'
+import { generateToken } from '../utils/tokenGenerator.js'
 const prisma = new PrismaClient()
 dotenv.config()
+const TOKEN_EXPIRATION_TIME = 1000 //3600000 // 1 jam
 
 
 const isEmailTakenCreate = async ( email ) => {
@@ -152,6 +154,103 @@ export const logoutUser = async ( refreshToken ) => {
 
     await prisma.refreshToken.delete( {
         where: { token: refreshToken },
+    } )
+
+}
+
+
+export const createResetLink = async ( email ) => {
+    const emailReset = await getUserByEmail( email )
+    if ( !emailReset )
+    {
+        throw new Error( 'Email not found' )
+    }
+
+    if ( !email )
+    {
+        throw new Error( 'Email is required' )
+    }
+
+    // Cek jika token aktif dan belum kedaluwarsa
+    const activeToken = await prisma.passwordResetToken.findFirst( {
+        where: { email },
+        orderBy: { createdAt: 'desc' } // Ambil token terbaru
+    } )
+
+    if ( activeToken && new Date() < new Date( activeToken.expiresAt ) )
+    {
+        const resetLink = `http://localhost:5000/api/auth/reset-password?token=${activeToken.token}&email=${email}`
+        // Jika token masih aktif, kembalikan token yang masih berlaku
+        return { resetLink: resetLink, token: activeToken.token }
+    }
+
+    const token = generateToken( email )
+    const expirationTime = new Date( Date.now() + process.env.TOKEN_EXPIRATION_TIME )
+
+    // Simpan token di database
+    await prisma.passwordResetToken.create( {
+        data: {
+            email,
+            token,
+            expiresAt: expirationTime
+        }
+    } )
+
+    // Buat tautan reset password
+    const resetLink = `http://localhost:5000/api/auth/reset-password?token=${token}&email=${email}`
+
+    return { resetLink, token }
+}
+
+
+export const validateResetToken = async ( email, token ) => {
+    if ( !email )
+    {
+        return { isValid: false, message: 'Email is required' }
+    }
+
+    if ( !token )
+    {
+        return { isValid: false, message: 'Token is required' }
+    }
+
+    const emailUser = await getUserByEmail( email )
+    if ( !emailUser )
+    {
+        return { isValid: false, message: 'Email not found' }
+    }
+
+    const tokenData = await prisma.passwordResetToken.findFirst( {
+        where: { email, token },
+        orderBy: { createdAt: 'desc' } // Ambil token terbaru
+    } )
+
+    if ( !tokenData )
+    {
+        return { isValid: false, message: 'Token not found' }
+    }
+
+    if ( new Date() > tokenData.expiresAt )
+    {
+        return { isValid: false, message: 'Token has expired' }
+    }
+
+    return { isValid: true, tokenData }
+}
+
+
+export const updatePassword = async ( email, newPassword ) => {
+    const hashedPassword = await bcrypt.hash( newPassword, 10 )
+
+    // Perbarui password pengguna di database
+    await prisma.user.update( {
+        where: { email },
+        data: { password: hashedPassword }
+    } )
+
+    // Hapus token setelah digunakan
+    await prisma.passwordResetToken.deleteMany( {
+        where: { email }
     } )
 
 }

@@ -47,3 +47,13 @@ model RefreshToken {
 
   @@map("RefreshToken")
 }
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  email     String
+  token     String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("PasswordResetToken")
+}

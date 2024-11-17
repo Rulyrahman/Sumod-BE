@@ -70,3 +70,63 @@ export const logout = async ( req, res ) => {
         return res.status( statusCode ).json( { message: error.message } )
     }
 }
+
+export const forgotPassword = async ( req, res ) => {
+    const { email } = req.body
+
+    try
+    {
+        // Buat tautan reset password menggunakan layanan
+        const { resetLink, token } = await authService.createResetLink( email )
+
+        // Kembalikan tautan reset sebagai respons
+        res.status( 200 ).json( {
+            message: 'Password reset link generated. Use the link below to reset your password:',
+            token,
+            resetLink: resetLink
+        } )
+    } catch ( error )
+    {
+        const statusCode = error.message === 'Email is required' || 'Email not found' ? 400 : 500
+        return res.status( statusCode ).json( { message: error.message } )
+    }
+}
+
+export const getResetPassword = async ( req, res ) => {
+    const { token, email } = req.query
+
+    const result = await authService.validateResetToken( email, token )
+
+    if ( result.isValid )
+    {
+        res.status( 200 ).json( {
+            message: 'Token is valid. You can now reset your password.',
+            token: result.tokenData.token // Bisa digunakan untuk form reset
+        } )
+    } else
+    {
+        res.status( 400 ).json( { message: result.message } )
+    }
+}
+
+export const resetPassword = async ( req, res ) => {
+    const { email, token, newPassword } = req.body
+
+    try
+    {
+        const result = await authService.validateResetToken( email, token )
+
+        if ( !result.isValid )
+        {
+            return res.status( 400 ).json( { message: result.message } )
+        }
+
+        // Update password pengguna
+        await authService.updatePassword( email, newPassword )
+
+        res.status( 200 ).json( { message: 'Password has been successfully updated' } )
+    } catch ( error )
+    {
+        res.status( 500 ).json( { message: 'An error occurred', error: error.message } )
+    }
+}
