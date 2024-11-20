@@ -5,8 +5,6 @@ import { PrismaClient } from '@prisma/client'
 import { generateToken } from '../utils/tokenGenerator.js'
 const prisma = new PrismaClient()
 dotenv.config()
-const TOKEN_EXPIRATION_TIME = 1000 //3600000 // 1 jam
-
 
 const isEmailTakenCreate = async ( email ) => {
     const user = await prisma.user.findUnique( {
@@ -171,23 +169,20 @@ export const createResetLink = async ( email ) => {
         throw new Error( 'Email is required' )
     }
 
-    // Cek jika token aktif dan belum kedaluwarsa
     const activeToken = await prisma.passwordResetToken.findFirst( {
         where: { email },
-        orderBy: { createdAt: 'desc' } // Ambil token terbaru
+        orderBy: { createdAt: 'desc' }
     } )
 
     if ( activeToken && new Date() < new Date( activeToken.expiresAt ) )
     {
-        const resetLink = `http://localhost:5000/api/auth/reset-password?token=${activeToken.token}&email=${email}`
-        // Jika token masih aktif, kembalikan token yang masih berlaku
+        const resetLink = `${process.env.BASE_URL}/api/auth/reset-password?token=${activeToken.token}&email=${email}`
         return { resetLink: resetLink, token: activeToken.token }
     }
 
     const token = generateToken( email )
     const expirationTime = new Date( Date.now() + process.env.TOKEN_EXPIRATION_TIME )
 
-    // Simpan token di database
     await prisma.passwordResetToken.create( {
         data: {
             email,
@@ -196,8 +191,7 @@ export const createResetLink = async ( email ) => {
         }
     } )
 
-    // Buat tautan reset password
-    const resetLink = `http://localhost:5000/api/auth/reset-password?token=${token}&email=${email}`
+    const resetLink = `${process.env.BASE_URL}/api/auth/reset-password?token=${token}&email=${email}`
 
     return { resetLink, token }
 }
@@ -222,7 +216,7 @@ export const validateResetToken = async ( email, token ) => {
 
     const tokenData = await prisma.passwordResetToken.findFirst( {
         where: { email, token },
-        orderBy: { createdAt: 'desc' } // Ambil token terbaru
+        orderBy: { createdAt: 'desc' }
     } )
 
     if ( !tokenData )
@@ -242,13 +236,11 @@ export const validateResetToken = async ( email, token ) => {
 export const updatePassword = async ( email, newPassword ) => {
     const hashedPassword = await bcrypt.hash( newPassword, 10 )
 
-    // Perbarui password pengguna di database
     await prisma.user.update( {
         where: { email },
         data: { password: hashedPassword }
     } )
 
-    // Hapus token setelah digunakan
     await prisma.passwordResetToken.deleteMany( {
         where: { email }
     } )

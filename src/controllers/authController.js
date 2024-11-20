@@ -76,10 +76,8 @@ export const forgotPassword = async ( req, res ) => {
 
     try
     {
-        // Buat tautan reset password menggunakan layanan
         const { resetLink, token } = await authService.createResetLink( email )
 
-        // Kembalikan tautan reset sebagai respons
         res.status( 200 ).json( {
             message: 'Password reset link generated. Use the link below to reset your password:',
             token,
@@ -101,7 +99,7 @@ export const getResetPassword = async ( req, res ) => {
     {
         res.status( 200 ).json( {
             message: 'Token is valid. You can now reset your password.',
-            token: result.tokenData.token // Bisa digunakan untuk form reset
+            token: result.tokenData.token
         } )
     } else
     {
@@ -121,7 +119,6 @@ export const resetPassword = async ( req, res ) => {
             return res.status( 400 ).json( { message: result.message } )
         }
 
-        // Update password pengguna
         await authService.updatePassword( email, newPassword )
 
         res.status( 200 ).json( { message: 'Password has been successfully updated' } )
