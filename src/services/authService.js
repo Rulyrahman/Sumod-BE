@@ -2,9 +2,9 @@ import bcrypt from 'bcryptjs'
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
 import { PrismaClient } from '@prisma/client'
+import { generateToken } from '../utils/tokenGenerator.js'
 const prisma = new PrismaClient()
 dotenv.config()
-
 
 const isEmailTakenCreate = async ( email ) => {
     const user = await prisma.user.findUnique( {
@@ -152,6 +152,97 @@ export const logoutUser = async ( refreshToken ) => {
 
     await prisma.refreshToken.delete( {
         where: { token: refreshToken },
+    } )
+
+}
+
+
+export const createResetLink = async ( email ) => {
+    const emailReset = await getUserByEmail( email )
+    if ( !emailReset )
+    {
+        throw new Error( 'Email not found' )
+    }
+
+    if ( !email )
+    {
+        throw new Error( 'Email is required' )
+    }
+
+    const activeToken = await prisma.passwordResetToken.findFirst( {
+        where: { email },
+        orderBy: { createdAt: 'desc' }
+    } )
+
+    if ( activeToken && new Date() < new Date( activeToken.expiresAt ) )
+    {
+        const resetLink = `${process.env.BASE_URL}/api/auth/reset-password?token=${activeToken.token}&email=${email}`
+        return { resetLink: resetLink, token: activeToken.token }
+    }
+
+    const token = generateToken( email )
+    const expirationTime = new Date( Date.now() + process.env.TOKEN_EXPIRATION_TIME )
+
+    await prisma.passwordResetToken.create( {
+        data: {
+            email,
+            token,
+            expiresAt: expirationTime
+        }
+    } )
+
+    const resetLink = `${process.env.BASE_URL}/api/auth/reset-password?token=${token}&email=${email}`
+
+    return { resetLink, token }
+}
+
+
+export const validateResetToken = async ( email, token ) => {
+    if ( !email )
+    {
+        return { isValid: false, message: 'Email is required' }
+    }
+
+    if ( !token )
+    {
+        return { isValid: false, message: 'Token is required' }
+    }
+
+    const emailUser = await getUserByEmail( email )
+    if ( !emailUser )
+    {
+        return { isValid: false, message: 'Email not found' }
+    }
+
+    const tokenData = await prisma.passwordResetToken.findFirst( {
+        where: { email, token },
+        orderBy: { createdAt: 'desc' }
+    } )
+
+    if ( !tokenData )
+    {
+        return { isValid: false, message: 'Token not found' }
+    }
+
+    if ( new Date() > tokenData.expiresAt )
+    {
+        return { isValid: false, message: 'Token has expired' }
+    }
+
+    return { isValid: true, tokenData }
+}
+
+
+export const updatePassword = async ( email, newPassword ) => {
+    const hashedPassword = await bcrypt.hash( newPassword, 10 )
+
+    await prisma.user.update( {
+        where: { email },
+        data: { password: hashedPassword }
+    } )
+
+    await prisma.passwordResetToken.deleteMany( {
+        where: { email }
     } )
 
 }
