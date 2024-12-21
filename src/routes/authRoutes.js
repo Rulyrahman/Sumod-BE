@@ -1,6 +1,8 @@
 import express from 'express'
 import { login, logout, register, refreshToken, forgotPassword, getResetPassword, resetPassword } from '../controllers/authController.js'
 
+import { listUsers } from '../services/authService.js'
+
 const router = express.Router()
 
 
@@ -11,6 +13,7 @@ router.post( '/refresh-token', refreshToken )
 router.post( '/forgot-password', forgotPassword )
 router.get( '/reset-password', getResetPassword )
 router.post( '/reset-password/new', resetPassword )
+router.get('/users', listUsers);
 
 
 export default router
