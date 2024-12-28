@@ -6,63 +6,6 @@ import path from "path";
 const prisma = new PrismaClient();
 const msgNotFound = "Product not found";
 
-// import { EventEmitter } from "events";
-
-// const progressEmitter = new EventEmitter();
-
-// export const sendProgressUpdates = (req, res) => {
-//   res.setHeader("Content-Type", "text/event-stream");
-//   res.setHeader("Cache-Control", "no-cache");
-//   res.setHeader("Connection", "keep-alive");
-//   res.flushHeaders();
-
-//   progressEmitter.on("progress", (data) => {
-//     res.write(`data: ${JSON.stringify(data)}\n\n`);
-//   });
-// };
-
-// const uploadToCloudinaryWithProgress = (filePath, onProgress) => {
-//   return new Promise((resolve, reject) => {
-//     const fileStats = fs.statSync(filePath);
-//     const totalBytes = fileStats.size; 
-
-//     const uploadStream = cloudinary.uploader.upload_stream(
-//       {
-//         folder: "products",
-//         allowed_formats: ["jpg", "png", "jpeg", "webp"],
-//       },
-//       (error, result) => {
-//         if (error) {
-//           reject(error);
-//         } else {
-//           resolve(result);
-//         }
-//       }
-//     );
-
-//     const fileStream = fs.createReadStream(filePath);
-//     let uploadedBytes = 0;
-
-//     fileStream.on("data", (chunk) => {
-//       uploadedBytes += chunk.length;
-//       const progress = {
-//         type: "cloudinary",
-//         uploadedBytes,
-//         totalBytes,
-//         progressPercentage: Math.round((uploadedBytes / totalBytes) * 100),
-//       };
-//       onProgress(progress);
-//       progressEmitter.emit("progress", progress);
-//     });
-
-//     fileStream.on("end", () => {
-//       progressEmitter.removeAllListeners("progress");
-//     });
-
-//     fileStream.pipe(uploadStream);
-//   });
-// };
-
 const isProductTakenUpdate = async (name, productId) => {
   const productData = await prisma.product.findUnique({
     where: { name },

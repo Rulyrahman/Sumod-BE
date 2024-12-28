@@ -50,7 +50,7 @@ const createMethod = async (name, description, file) => {
   if (file) {
     try {
       const uploadResult = await cloudinary.uploader.upload(file.path, {
-        folder: "products", // masih disimpan didalam folder products cloudinary
+        folder: "methods", // masih disimpan didalam folder products cloudinary
         allowed_formats: ["jpg", "png", "jpeg", "webp"],
       });
       pictureUrl = uploadResult.secure_url;
@@ -147,7 +147,7 @@ const updateMethod = async (id, name, description, picture) => {
   if (picture) {
     try {
       const uploadResult = await cloudinary.uploader.upload(picture.path, {
-        folder: "products", // disimpan didalam folder products cloudinary
+        folder: "methods", // disimpan didalam folder products cloudinary
         allowed_formats: ["jpg", "png", "jpeg", "webp"],
       });
 
@@ -157,7 +157,7 @@ const updateMethod = async (id, name, description, picture) => {
 
       if (method.picture) {
         const oldImagePublicId = method.picture.split("/").pop().split(".")[0];
-        await cloudinary.uploader.destroy(`products/${oldImagePublicId}`);
+        await cloudinary.uploader.destroy(`methods/${oldImagePublicId}`);
       }
     } catch (error) {
       await deleteLocalFile();
