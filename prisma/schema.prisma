@@ -57,3 +57,12 @@ model PasswordResetToken {
 
   @@map("PasswordResetToken")
 }
+
+model Method {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?   
+  picture     String?   
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}

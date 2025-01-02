@@ -1,20 +1,23 @@
-import multer from 'multer'
+import multer from "multer";
 
-
-export const multerErrorHandler = ( err, req, res, next ) => {
-    if ( err instanceof multer.MulterError )
-    {
-        if ( err.code === 'LIMIT_UNEXPECTED_FILE' )
-        {
-            return res.status( 400 ).json( { message: 'Must be a single file' } )
-        }
-        return res.status( 400 ).json( { message: `Multer error: ${err.message}` } )
+export const multerErrorHandler = (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    switch (err.code) {
+      case "LIMIT_FILE_SIZE":
+        return res.status(400).json({ message: "Ukuran file melebihi ukuran maksimum yang diizinkan (5MB)" });
+      case "LIMIT_FILE_COUNT":
+        return res.status(400).json({ message: "Terlalu banyak file. Hanya satu file yang diperbolehkan" });
+      case "LIMIT_UNEXPECTED_FILE":
+        return res.status(400).json({ message: "File yang tidak diharapkan. Silakan unggah file yang valid." });
+      default:
+        return res.status(400).json({ message: `Multer error: ${err.message}` });
     }
+  }
 
-    if ( err )
-    {
-        return res.status( 500 ).json( { message: 'An error occurred', error: err.message } )
-    }
+  if (err) {
+    console.error("Upload error:", err);
+    return res.status(500).json({ message: "An internal server error occurred.", error: err.message });
+  }
 
-    next()
-}
+  next();
+};

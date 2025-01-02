@@ -181,7 +181,8 @@ export const createResetLink = async ( email ) => {
     }
 
     const token = generateToken( email )
-    const expirationTime = new Date( Date.now() + process.env.TOKEN_EXPIRATION_TIME )
+    const tokenExpiration = Number( process.env.TOKEN_EXPIRATION_TIME )
+    const expirationTime = new Date( Date.now() + tokenExpiration )
 
     await prisma.passwordResetToken.create( {
         data: {
@@ -245,4 +246,56 @@ export const updatePassword = async ( email, newPassword ) => {
         where: { email }
     } )
 
+}
+
+export const listUsers = async ( page, limit ) => {
+    const pageParse = Number( page, 10 )
+    const limitParse = Number( limit, 10 )
+    if ( typeof pageParse !== "number" || isNaN( pageParse ) )
+    {
+        throw new Error( "Page must be a number" )
+    }
+
+    if ( typeof limitParse !== "number" || isNaN( limitParse ) )
+    {
+        throw new Error( "Limit must be a number" )
+    }
+
+    const offset = ( pageParse - 1 ) * limitParse
+    const usersData = await prisma.user.findMany( {
+        skip: offset,
+        take: limitParse,
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            picture: true,
+            createdAt: true,
+            updatedAt: true,
+        },
+    } )
+
+    const totalUsers = await prisma.user.count()
+
+    return {
+        usersData,
+        currentPage: pageParse,
+        limit: limitParse,
+        totalPages: Math.ceil( totalUsers / limitParse ),
+        totalUsers,
+    }
+}
+
+export const getAdminProfile = async ( adminId ) => {
+    return await prisma.user.findUnique( {
+        where: { id: adminId },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            picture: true,
+            createdAt: true,
+            updatedAt: true,
+        },
+    } )
 }
