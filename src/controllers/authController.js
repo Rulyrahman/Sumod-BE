@@ -128,3 +128,41 @@ export const resetPassword = async ( req, res ) => {
     }
 }
 
+export const getAllUsers = async ( req, res ) => {
+    try
+    {
+        const page = req.query.page || 1
+        const limit = req.query.limit || 10
+
+        const users = await authService.listUsers( page, limit )
+        return res.status( 200 ).json( {
+            message: "List users",
+            data: users.usersData,
+            currentPage: users.currentPage,
+            limit: users.limit,
+            totalPages: users.totalPages,
+            totalUsers: users.totalUsers
+        } )
+    } catch ( error )
+    {
+        return res.status( 500 ).json( { message: error.message } )
+    }
+}
+
+export const fetchAdminProfile = async ( req, res ) => {
+    try
+    {
+        const admin = await authService.getAdminProfile( req.user.id )
+        if ( !admin )
+        {
+            return res.status( 404 ).json( { message: 'Admin not found' } )
+        }
+        res.json( {
+            message: "Profil user",
+            data: admin,
+        } )
+    } catch ( error )
+    {
+        res.status( 500 ).json( { message: 'Internal server error', error } )
+    }
+}
