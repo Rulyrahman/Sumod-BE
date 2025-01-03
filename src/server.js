@@ -5,6 +5,7 @@ import { health } from './utils/checkHealth.js'
 import authRoutes from './routes/authRoutes.js'
 import productRoutes from './routes/productRoutes.js'
 import methodRoutes from './routes/methodRoutes.js'
+import visionMissionRoutes from './routes/visionMissionRoutes.js'
 import { multerErrorHandler } from './middlewares/multerHandler.js'
 dotenv.config()
 const app = express()
@@ -18,11 +19,9 @@ app.use( express.json() )
 //api health check
 app.get( '/api/health', ( req, res ) => { health( res ) } )
 //api users
-app.use( '/api', productRoutes, methodRoutes )
+app.use( '/api', productRoutes, methodRoutes, visionMissionRoutes )
 // api auth
 app.use( '/api/auth', authRoutes )
-
-
 
 
 app.use( multerErrorHandler )
